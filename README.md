@@ -24,8 +24,10 @@
 ##### דיאגרמת ERD
 ##### דיאגרמת DSD
 ##### הכנסת נתונים דרך קבצי אקסל
-
-
+##### הכנסת נתונים דרך פייתון
+##### הכנסת נתונים דרך Mockaroo
+##### ביצוע גיבוי
+##### ביצוע שחזור
 
 
 ## 📄 תיאור מילולי של המערכת
@@ -147,3 +149,22 @@
 
 
 ![Alt text](images/Mockaroo_File.png)
+
+## **💾 ביצוע גיבוי**
+
+![Alt text](images/backup1.png)
+
+![Alt text](images/backup2.png)
+
+![Alt text](images/backup3.png)
+
+![Alt text](images/backup4.png)
+
+![Alt text](images/backup5.png)
+## **💾 ביצוע שחזור**
+
+![Alt text](images/Restore1.png)
+
+![Alt text](images/Restore2.png)
+
+![Alt text](images/Restore3.png)
