@@ -260,9 +260,9 @@
 
 ---
 
-![Alt text](images/Query7.png)
+![Alt text](images/Query4.png)
 ##### תוצאה:
-![Alt text](images/Query7_Result.png)
+![Alt text](images/Query4_Result.png)
 
 
 
