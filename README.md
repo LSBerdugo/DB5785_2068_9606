@@ -432,7 +432,7 @@
 זה מונע הזנת משכורת שלילית בטעות.
 ![Alt text](images/Constraint1.png)
 
-אחרי הרצת האילוץ, כשאנסה להכניס Salary עם סכום שלילי, זה לא יעבוד:
+### אחרי הרצת האילוץ, כשאנסה להכניס Salary עם סכום שלילי, זה לא יעבוד:
 ![Alt text](images/Show_Constraint1.png)
 
 ---
@@ -443,7 +443,7 @@
 
 ![Alt text](images/Constraint2.png)
 
-אחרי הרצת האילוץ, כשאנסה להכניס Driver License עם תאריך הפקיעה שהוא קודם לתאריך ההנפקה, זה לא יעבוד:
+### אחרי הרצת האילוץ, כשאנסה להכניס Driver License עם תאריך הפקיעה שהוא קודם לתאריך ההנפקה, זה לא יעבוד:
 ![Alt text](images/Show_Constraint2.png)
 
 ---
@@ -454,7 +454,7 @@
 
 ![Alt text](images/Constraint3.png)
 
-אחרי הרצת האילוץ, כשאנסה להכניס Schedule שיהיה בו סוף המשמרת לפני תחילתה, זה לא יעבוד:
+### אחרי הרצת האילוץ, כשאנסה להכניס Schedule שיהיה בו סוף המשמרת לפני תחילתה, זה לא יעבוד:
 ![Alt text](images/Show_Constraint3.png)
 
 
@@ -465,7 +465,7 @@
 
 ![Alt text](images/Constraint4.png)
 
-אחרי הרצת האילוץ, כשאנסה להכניס Driver Assignment עם תאריך סיום לפני תאריך התחלה, זה לא יעבוד:
+### אחרי הרצת האילוץ, כשאנסה להכניס Driver Assignment עם תאריך סיום לפני תאריך התחלה, זה לא יעבוד:
 ![Alt text](images/Show_Constraint4.png)
 
 ---
@@ -477,7 +477,7 @@
 
 ![Alt text](images/Constraint5.png)
 
-אחרי הרצת האילוץ, כשאנסה להכניס Staff  עם תאריך קליטה בעתיד, זה לא יעבוד:
+### אחרי הרצת האילוץ, כשאנסה להכניס Staff  עם תאריך קליטה בעתיד, זה לא יעבוד:
 ![Alt text](images/Show_Constraint5.png)
 
 
