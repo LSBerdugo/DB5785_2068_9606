@@ -521,7 +521,7 @@
 ![Alt text](images/Rollback.png)
 
 
-### אחרי ביצוע Rollback, כל הבונוסים חזרו להיות כמו לפני העדכון.
+### אחרי ביצוע Rollback, כל הבונוסים חזרו להיות כמו לפני העדכון:
 ![Alt text](images/After_Rollback.png)
 
 ---
@@ -541,7 +541,7 @@
 ![Alt text](images/Commit.png)
 
 
-### אחרי ביצוע Commit, כל הבונוסים חזרו להיות כמו לפני העדכון.
+### אחרי ביצוע Commit, כל הבונוסים נשארו כפי שהיו:
 ![Alt text](images/After_Commit.png)
 
 
