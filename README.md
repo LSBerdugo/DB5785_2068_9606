@@ -548,3 +548,18 @@
 ![Alt text](images/After_Commit.png)
 
 
+---
+### תרשים DSD של בסיס הנתונים השני:
+![Alt text](images/DSD_Diagram_Integration.png)
+
+---
+### תרשים ERD של בסיס הנתונים השני:
+![Alt text](images/ERD_Diagram_Integration.png)
+
+---
+
+
+
+
+
+
