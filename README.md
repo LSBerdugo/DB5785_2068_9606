@@ -439,15 +439,15 @@
 ### לפני הרצת שאילתת המחיקה:
 
 
-![Alt text](images/Before_Delete3.png)
 
--
+
+
 
 ### שאילתת המחיקה:
-![Alt text](images/Delete3.png)
+
 
 ### אחרי הרצת שאילתת המחיקה:
-![Alt text](images/After_Delete3.png)
+
 
 ---
 # 🔒אילוץ 1: בדיקה שערך המשכורת חיובי
