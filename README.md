@@ -441,6 +441,8 @@
 
 ![Alt text](images/Before_Delete3.png)
 
+-
+
 ### שאילתת המחיקה:
 ![Alt text](images/Delete3.png)
 
