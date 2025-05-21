@@ -559,7 +559,15 @@
 ---
 
 
+### תרשים ERD משותף של שני הבסיסי נתונים :
+![Alt text](images/ERD_Diagram_With_Integration.png)
+
+---
 
 
 
+### תרשים DSD משותף של שני הבסיסי נתונים :
+![Alt text](images/DSD_Diagram_With_Integration.png)
+
+---
 
