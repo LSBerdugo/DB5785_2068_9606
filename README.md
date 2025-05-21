@@ -549,24 +549,24 @@
 
 
 ---
-### תרשים DSD של בסיס הנתונים השני:
+# תרשים DSD של בסיס הנתונים השני:
 ![Alt text](images/DSD_Diagram_Integration.png)
 
 ---
-### תרשים ERD של בסיס הנתונים השני:
+# תרשים ERD של בסיס הנתונים השני:
 ![Alt text](images/ERD_Diagram_Integration.png)
 
 ---
 
 
-### תרשים ERD משותף של שני הבסיסי נתונים :
+# תרשים ERD משותף של שני הבסיסי נתונים :
 ![Alt text](images/ERD_Diagram_With_Integration.png)
 
 ---
 
 
 
-### תרשים DSD משותף של שני הבסיסי נתונים :
+# תרשים DSD משותף של שני הבסיסי נתונים :
 ![Alt text](images/DSD_Diagram_With_Integration.png)
 
 ---
