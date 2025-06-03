@@ -779,7 +779,7 @@
 
 
 
-### שאילתא על המבט
+### שאילתא 1 על המבט
 שולפת רק את השיבוצים של נהג בשם "kuku washere" .
 אם הוא לא באמת קיים – הפלט יהיה ריק.
 ![Alt text](images/view2_query.png)
@@ -792,10 +792,19 @@
 ---
 
 
+### שאילתא 2 על המבט
+השאילתה מחזירה את המסלול הארוך ביותר הפעיל מכל תחנת מוצא (start_location) מתוך תצוגת הנתונים BusRouteDetailsView
+![Alt text](images/view2_query2.png)
+
+##### תוצאה:
+
+![Alt text](images/view2_query2_result.png)
 
 
 
 
+
+---
 
 
 
