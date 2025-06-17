@@ -822,7 +822,7 @@
 
 
 
-# תוכנית ראשית 1- main_driver_performance_analysis
+# תוכנית ראשית 1- ניתוח ביצועי נהגים 
 
 ### תיאור מילולי של התוכנית:
 התוכנית הראשית מבצעת ניתוח ביצועים של נהגים עבור חודש ושנה מסוימים. היא פועלת כך:
@@ -837,7 +837,11 @@
 
 ###  פרוצדורות ופונקציות:
 
-#### פונקציה 1: calculate_driver_total_salary
+#### פונקציה 1: calculate_driver_total_salary- חישוב סכום משכורות נהג עם בונוסים
+
+###### תיאור:
+פונקציה שמחשבת את סך כל המשכורות והבונוסים של נהג מסוים בטווח תאריכים נתון. היא בודקת אם הנהג קיים במערכת, ואז שולפת את כל התשלומים שבוצעו לו, כולל סכום הבונוסים. הפונקציה גם מחזירה ממוצע משכורת ומספר התשלומים
+
 
 ``` sql 
 CREATE OR REPLACE FUNCTION calculate_driver_total_salary(
@@ -918,20 +922,385 @@ $$ LANGUAGE plpgsql;
 
 
 
+#### פונקציה 2: get_drivers_with_assignments- קבלת פרטי נהגים עם Ref Cursor
+###### תיאור:
+פונקציה שמחזירה מצביע (REFCURSOR) לטבלה המכילה את פרטי כל הנהגים והקצאותיהם לאוטובוסים. היא כוללת מידע אישי על הנהג, תאריך פקיעת הרישיון, תאריכי ההקצאה, והסטטוס של ההקצאה (פעילה, עתידית, או הסתיימה).
+
+``` sql
+CREATE OR REPLACE FUNCTION get_drivers_with_assignments()
+RETURNS REFCURSOR AS $$
+DECLARE
+    drivers_cursor REFCURSOR := 'drivers_ref';
+BEGIN
+    OPEN drivers_cursor FOR
+        SELECT 
+            s.staffid,
+            s.first_name,
+            s.last_name,
+            s.phone,
+            s.email,
+            dl.expirydate as license_expiry,
+            da.busid,
+            da.assignmentdate,
+            da.enddate,
+            CASE 
+                WHEN da.enddate IS NULL THEN 'Active'
+                WHEN da.enddate > CURRENT_DATE THEN 'Future'
+                ELSE 'Completed'
+            END as assignment_status
+        FROM staff s
+        JOIN driver d ON s.staffid = d.staffid
+        LEFT JOIN driverlicense dl ON d.staffid = dl.staffid
+        LEFT JOIN driverassignment da ON d.staffid = da.staffid
+        ORDER BY s.staffid, da.assignmentdate DESC;
+    
+    RETURN drivers_cursor;
+END;
+$$ LANGUAGE plpgsql;
+
+```
+
+
+#### פרוצדורה 1: manage_driver_assignments- ניהול הקצאות נהגים לאוטובוסים
+###### תיאור:
+פרוצדורה לניהול הקצאות של נהגים לאוטובוסים. 
+היא תומכת בשלוש פעולות:
+*פעולת ASSIGN- להקצות נהג חדש לאוטובוס, רק אם אין לו הקצאה פעילה.
+*פעולת END- לסיים הקצאה פעילה קיימת.
+*פעולת EXTEND- להאריך הקצאה פעילה ב־30 ימים.
+
+במהלך הביצוע, הפרוצדורה גם בודקת אם הנהג קיים ואם יש לו הקצאות פעילות.
+
+
+``` sql
+CREATE OR REPLACE PROCEDURE manage_driver_assignments(
+    p_staff_id INT,
+    p_bus_id INT,
+    p_assignment_date DATE DEFAULT CURRENT_DATE,
+    p_action VARCHAR(10) DEFAULT 'ASSIGN' -- ASSIGN, END, EXTEND
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_driver_record RECORD;
+    v_current_assignment RECORD;
+    v_assignment_count INT;
+    v_new_end_date DATE;
+BEGIN
+    -- בדיקת קיום הנהג
+    SELECT s.staffid, s.first_name, s.last_name
+    INTO v_driver_record
+    FROM staff s
+    JOIN driver d ON s.staffid = d.staffid
+    WHERE s.staffid = p_staff_id;
+    
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Driver with ID % not found', p_staff_id;
+    END IF;
+    
+    -- בדיקת הקצאה נוכחית
+    SELECT * INTO v_current_assignment
+    FROM driverassignment 
+    WHERE staffid = p_staff_id AND (enddate IS NULL OR enddate > CURRENT_DATE)
+    ORDER BY assignmentdate DESC
+    LIMIT 1;
+    
+    CASE p_action
+        WHEN 'ASSIGN' THEN
+            -- בדיקה שאין הקצאה פעילה
+            IF v_current_assignment.assignmentid IS NOT NULL THEN
+                RAISE EXCEPTION 'Driver % already has an active assignment', p_staff_id;
+            END IF;
+            
+            -- הקצאה חדשה
+            INSERT INTO driverassignment (busid, assignmentdate, staffid)
+            VALUES (p_bus_id, p_assignment_date, p_staff_id);
+            
+            RAISE NOTICE 'Assigned driver % to bus %', p_staff_id, p_bus_id;
+            
+        WHEN 'END' THEN
+            IF v_current_assignment.assignmentid IS NULL THEN
+                RAISE EXCEPTION 'No active assignment found for driver %', p_staff_id;
+            END IF;
+            
+            -- סיום הקצאה
+            UPDATE driverassignment 
+            SET enddate = p_assignment_date
+            WHERE assignmentid = v_current_assignment.assignmentid;
+            
+            RAISE NOTICE 'Ended assignment for driver %', p_staff_id;
+            
+        WHEN 'EXTEND' THEN
+            IF v_current_assignment.assignmentid IS NULL THEN
+                RAISE EXCEPTION 'No active assignment found for driver %', p_staff_id;
+            END IF;
+            
+            -- הארכת הקצאה (30 יום)
+            v_new_end_date := COALESCE(v_current_assignment.enddate, CURRENT_DATE) + INTERVAL '30 days';
+            
+            UPDATE driverassignment 
+            SET enddate = v_new_end_date
+            WHERE assignmentid = v_current_assignment.assignmentid;
+            
+            RAISE NOTICE 'Extended assignment for driver % until %', p_staff_id, v_new_end_date;
+            
+        ELSE
+            RAISE EXCEPTION 'Invalid action: %. Use ASSIGN, END, or EXTEND', p_action;
+    END CASE;
+    
+    -- ספירת סך כל ההקצאות
+    SELECT COUNT(*) INTO v_assignment_count
+    FROM driverassignment 
+    WHERE staffid = p_staff_id;
+    
+    RAISE NOTICE 'Driver % now has % total assignments', p_staff_id, v_assignment_count;
+    
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Error in manage_driver_assignments: %', SQLERRM;
+END;
+$$;
+
+```
+
+
+
+### התוכנית הראשית:
+
+
+``` sql
+CREATE OR REPLACE PROCEDURE main_driver_performance_analysis(
+    p_month INT DEFAULT EXTRACT(MONTH FROM CURRENT_DATE),
+    p_year INT DEFAULT EXTRACT(YEAR FROM CURRENT_DATE)
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_driver_cursor REFCURSOR;
+    v_driver_rec RECORD;
+    v_salary_info RECORD;
+    v_start_date DATE;
+    v_end_date DATE;
+    v_total_drivers INT := 0;
+    v_active_drivers INT := 0;
+BEGIN
+    RAISE NOTICE '=== Driver Performance Analysis for %/% ===', p_month, p_year;
+    
+    -- הגדרת טווח תאריכים
+    v_start_date := DATE(p_year || '-' || p_month || '-01');
+    v_end_date := v_start_date + INTERVAL '1 month' - INTERVAL '1 day';
+    
+    -- קריאה לפונקציה המחזירה ref cursor
+    SELECT get_drivers_with_assignments() INTO v_driver_cursor;
+    
+    LOOP
+        FETCH v_driver_cursor INTO v_driver_rec;
+        EXIT WHEN NOT FOUND;
+        
+        v_total_drivers := v_total_drivers + 1;
+        
+        -- בדיקה אם הנהג פעיל
+        IF v_driver_rec.assignment_status = 'Active' THEN
+            v_active_drivers := v_active_drivers + 1;
+            
+            -- קריאה לפונקציה לחישוב משכורת
+            SELECT * INTO v_salary_info
+            FROM calculate_driver_total_salary(
+                v_driver_rec.staffid, 
+                v_start_date, 
+                v_end_date
+            );
+            
+            RAISE NOTICE 'Driver: % % (ID: %) - Total Salary: %, Payments: %',
+                        v_driver_rec.first_name,
+                        v_driver_rec.last_name,
+                        v_driver_rec.staffid,
+                        v_salary_info.total_salary,
+                        v_salary_info.payment_count;
+                        
+            -- הארכת הקצאה לנהגים עם ביצועים טובים
+            IF v_salary_info.payment_count > 15 AND v_salary_info.total_salary > 50000 THEN
+                CALL manage_driver_assignments(
+                    v_driver_rec.staffid,
+                    v_driver_rec.busid,
+                    CURRENT_DATE,
+                    'EXTEND'
+                );
+            END IF;
+        END IF;
+    END LOOP;
+    
+    CLOSE v_driver_cursor;
+    
+    RAISE NOTICE 'Analysis Complete: % total drivers, % active drivers', 
+                 v_total_drivers, v_active_drivers;
+END;
+$$;
+```
 
 
 
 
+# תוכנית ראשית 2- ניתוח של ביצועי נהגים לפי חודש ושנה מסוימים
 
+### תיאור מילולי של התוכנית:
 
-
-
-
-
-
-
-
+תיאור:
+תוכנית ראשית לביצוע ניהול נוכחות יומי של עובד.
+היא:
+1. מוסיפה רישום של "נוכח" ליום הנוכחי (אם עדיין לא נוסף).
+2. מחשבת את אחוזי הנוכחות של העובד.
+3. מדפיסה את אחוזי הנוכחות כהודעה (NOTICE) למסך או ליומן.
  
+
+###  פרוצדורות ופונקציות:
+
+#### פונקציה 1: get_attendance_percentage- חישוב אחוזי נוכחות לעובד
+
+###### תיאור:
+
+פונקציה שמחשבת את אחוזי הנוכחות של עובד מסוים.
+היא בודקת:
+* כמה פעמים העובד נרשם בכלל בטבלת הנוכחות.
+* כמה פעמים הוא היה נוכח בפועל.
+  אם אין רישומי נוכחות – האחוז יהיה אפס. אחרת, הפונקציה מחזירה את אחוז הנוכחות כשהוא מעוגל לשתי ספרות אחרי הנקודה.
+  
+  ``` sql
+  CREATE OR REPLACE FUNCTION get_attendance_percentage(p_staff_id INT)
+RETURNS NUMERIC AS $$
+DECLARE
+    total_days INT;
+    present_days INT;
+BEGIN
+    -- סופרים את כלל הימים שבהם נרשמה נוכחות
+    SELECT COUNT(*) INTO total_days 
+    FROM Attendance 
+    WHERE StaffID = p_staff_id;
+
+    -- אם אין כלל נוכחויות – אחוזי נוכחות יהיו 0
+    IF total_days = 0 THEN
+        RETURN 0;
+    END IF;
+
+    -- סופרים את הימים שבהם העובד היה נוכח
+    SELECT COUNT(*) INTO present_days 
+    FROM Attendance 
+    WHERE StaffID = p_staff_id AND Status = 'Present';
+
+    -- מחזירים אחוז עיגול לשתי ספרות אחרי הנקודה
+    RETURN ROUND((present_days * 100.0) / total_days, 2);
+END;
+$$ LANGUAGE plpgsql;
+  ``
+
+
+  
+
+
+#### פרוצדורה 1: add_attendance_once- הוספת נוכחות רק אם לא קיימת
+
+###### תיאור:
+פרוצדורה שמוסיפה רישום נוכחות לעובד רק אם עדיין לא נרשמה נוכחות באותו יום.
+היא מקבלת מזהה עובד, תאריך וסטטוס (נוכח, באיחור, וכו’) ומוודאת שלא קיים כבר רישום באותו יום. אם לא קיים – מוסיפה שורה חדשה לטבלת הנוכחות.
+
+``` sql
+CREATE OR REPLACE PROCEDURE add_attendance_once(
+    p_staff_id INT, 
+    p_date DATE, 
+    p_status status_enum
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- בדיקה אם קיימת כבר נוכחות באותו תאריך
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM Attendance 
+        WHERE StaffID = p_staff_id AND currentDate = p_date
+    ) THEN
+        -- הכנסת נוכחות חדשה
+        INSERT INTO Attendance(currentDate, Status, StaffID)
+        VALUES (p_date, p_status, p_staff_id);
+    END IF;
+END;
+$$;
+```
+
+
+### התוכנית הראשית:
+
+
+``` sql
+CREATE OR REPLACE PROCEDURE main_attendance_check(p_staff_id INT)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    percent NUMERIC;
+BEGIN
+    -- הוספת נוכחות "נוכח" ליום הנוכחי (אם לא קיימת)
+    CALL add_attendance_once(p_staff_id, CURRENT_DATE, 'Present');
+
+    -- חישוב אחוזי נוכחות
+    percent := get_attendance_percentage(p_staff_id);
+
+    -- הדפסת תוצאה
+    RAISE NOTICE 'אחוזי נוכחות של העובד: %', percent;
+END;
+$$;
+```
+
+# טריגרים:
+
+### טריגר 1- 
+
+###### מטרת הטריגר:
+לבדוק תוקף רישיון הנהיגה של נהג לפני שמבצעים שיבוץ (assignment) שלו לנסיעה חדשה או עדכון של שיבוץ קיים.
+המטרה היא לוודא שאין שיבוץ לנהג עם רישיון פג תוקף או שעומד לפוג.
+
+
+``` sql
+CREATE OR REPLACE FUNCTION trigger_check_license_validity()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_license_expiry DATE;
+    v_driver_name TEXT;
+BEGIN
+    -- קבלת פרטי רישיון הנהיגה
+    SELECT dl.expirydate, s.first_name || ' ' || s.last_name
+    INTO v_license_expiry, v_driver_name
+    FROM driverlicense dl
+    JOIN staff s ON dl.staffid = s.staffid
+    WHERE dl.staffid = NEW.staffid;
+    
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No valid license found for driver with Staff ID %', NEW.staffid;
+    END IF;
+    
+    -- בדיקת תוקף הרישיון
+    IF v_license_expiry <= CURRENT_DATE THEN
+        RAISE EXCEPTION 'License expired for driver % (%). Expiry date: %', 
+                       v_driver_name, NEW.staffid, v_license_expiry;
+    END IF;
+    
+    -- אזהרה אם הרישיון יפוג בתוך 30 יום
+    IF v_license_expiry <= CURRENT_DATE + INTERVAL '30 days' THEN
+        RAISE WARNING 'License for driver % (%) will expire soon on %', 
+                     v_driver_name, NEW.staffid, v_license_expiry;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_license_before_assignment
+    BEFORE INSERT OR UPDATE ON driverassignment
+    FOR EACH ROW
+    EXECUTE FUNCTION trigger_check_license_validity();
+
+```
+
+
+
+
+
 
 
 
