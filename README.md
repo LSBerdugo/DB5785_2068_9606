@@ -822,6 +822,104 @@
 
 
 
+# תוכנית ראשית 1- main_driver_performance_analysis
+
+### תיאור מילולי של התוכנית:
+התוכנית הראשית מבצעת ניתוח ביצועים של נהגים עבור חודש ושנה מסוימים. היא פועלת כך:
+
+1. מגדירה את טווח התאריכים לפי החודש והשנה שהוזנו (או החודש הנוכחי כברירת מחדל).
+2. שולפת את רשימת הנהגים עם פרטי ההקצאות שלהם (כולל סטטוס – פעיל, עתידי, או הסתיים).
+3. עוברת נהג-נהג:
+    * אם הנהג מוגדר כ"פעיל" – מחשבת את סך המשכורת והבונוסים שקיבל באותו חודש.
+    * בודקת אם מגיע לו הארכת הקצאה – רק אם עבד הרבה (יותר מ-15 תשלומים) וקיבל שכר גבוה (מעל 50,000).
+אם כן – מאריכה אוטומטית את ההקצאה שלו.
+4. בסוף התהליך, מדווחת כמה נהגים נבדקו וכמה מהם היו פעילים.
+
+###  פרוצדורות ופונקציות:
+
+#### פונקציה 1: calculate_driver_total_salary
+
+``` sql 
+-- ===== פונקציה 1: חישוב סכום משכורות נהג עם בונוסים =====
+CREATE OR REPLACE FUNCTION calculate_driver_total_salary(
+    p_staff_id INT,
+    p_start_date DATE DEFAULT NULL,
+    p_end_date DATE DEFAULT NULL
+) RETURNS TABLE(
+    staff_id INT,
+    driver_name TEXT,
+    total_salary NUMERIC,
+    total_bonus NUMERIC,
+    payment_count INT,
+    avg_salary NUMERIC
+) AS $$
+DECLARE
+    v_driver_record RECORD;
+    v_salary_cursor CURSOR(driver_id INT, start_dt DATE, end_dt DATE) FOR
+        SELECT s.amount, s.bonus, s.paymentdate 
+        FROM salary s 
+        WHERE s.staffid = driver_id 
+        AND (start_dt IS NULL OR s.paymentdate >= start_dt)
+        AND (end_dt IS NULL OR s.paymentdate <= end_dt);
+    v_salary_rec RECORD;
+    v_total_salary NUMERIC := 0;
+    v_total_bonus NUMERIC := 0;
+    v_count INT := 0;
+    v_temp_bonus INT;
+BEGIN
+    -- Exception handling
+    BEGIN
+        -- בדיקה שהנהג קיים
+        SELECT st.staffid, st.first_name || ' ' || st.last_name as full_name
+        INTO v_driver_record
+        FROM staff st
+        JOIN driver d ON st.staffid = d.staffid
+        WHERE st.staffid = p_staff_id;
+        
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Driver with ID % not found', p_staff_id;
+        END IF;
+        
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE EXCEPTION 'Driver with ID % does not exist', p_staff_id;
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Error finding driver: %', SQLERRM;
+    END;
+    
+    -- פתיחת cursor וחישוב סכומים
+    OPEN v_salary_cursor(p_staff_id, p_start_date, p_end_date);
+    
+    LOOP
+        FETCH v_salary_cursor INTO v_salary_rec;
+        EXIT WHEN NOT FOUND;
+        
+        v_total_salary := v_total_salary + v_salary_rec.amount;
+        
+        -- טיפול בבונוס (יכול להיות NULL)
+        v_temp_bonus := COALESCE(v_salary_rec.bonus, 0);
+        v_total_bonus := v_total_bonus + v_temp_bonus;
+        
+        v_count := v_count + 1;
+    END LOOP;
+    
+    CLOSE v_salary_cursor;
+    
+    -- החזרת התוצאות
+    RETURN QUERY SELECT 
+        v_driver_record.staffid,
+        v_driver_record.full_name,
+        v_total_salary,
+        v_total_bonus,
+        v_count,
+        CASE WHEN v_count > 0 THEN v_total_salary / v_count ELSE 0 END;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+
+
+
 
 
 
