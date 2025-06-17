@@ -1162,9 +1162,10 @@ $$;
 * כמה פעמים העובד נרשם בכלל בטבלת הנוכחות.
 * כמה פעמים הוא היה נוכח בפועל.
   אם אין רישומי נוכחות – האחוז יהיה אפס. אחרת, הפונקציה מחזירה את אחוז הנוכחות כשהוא מעוגל לשתי ספרות אחרי הנקודה.
-  
-  ``` sql
-  CREATE OR REPLACE FUNCTION get_attendance_percentage(p_staff_id INT)
+
+   
+``` sql
+CREATE OR REPLACE FUNCTION get_attendance_percentage(p_staff_id INT)
 RETURNS NUMERIC AS $$
 DECLARE
     total_days INT;
@@ -1189,7 +1190,7 @@ BEGIN
     RETURN ROUND((present_days * 100.0) / total_days, 2);
 END;
 $$ LANGUAGE plpgsql;
-  ``
+```
 
 
   
