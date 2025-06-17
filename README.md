@@ -840,7 +840,6 @@
 #### פונקציה 1: calculate_driver_total_salary
 
 ``` sql 
--- ===== פונקציה 1: חישוב סכום משכורות נהג עם בונוסים =====
 CREATE OR REPLACE FUNCTION calculate_driver_total_salary(
     p_staff_id INT,
     p_start_date DATE DEFAULT NULL,
