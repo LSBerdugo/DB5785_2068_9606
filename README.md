@@ -1335,10 +1335,62 @@ CREATE TRIGGER check_license_before_assignment
 ```
 
 
+###### הוספת driverassignment לנהג שהרישיון שלו פג תוקף:
+[![Alt text](images/trigger1_notwork_1.png)
 
 
+[![Alt text](images/trigger1_notwork_2.png)
 
 
+---
+###### הוספת driverassignment לנהג שהרישיון שלו לא פג תוקף:
+
+[![Alt text](images/trigger1_work_1.png)
 
 
+[![Alt text](images/trigger1_work_2.png)
+
+
+---
+
+### טריגר 2- 
+
+
+###### מטרת הטריגר:
+טריגר זה נועד למנוע רישום כפול של נוכחות לאותו עובד (StaffID) באותו תאריך (currentDate).
+כלומר, אם כבר קיימת שורת נוכחות עבור עובד בתאריך מסוים – לא תתאפשר הכנסת שורה נוספת עם אותם פרטים.
+
+''' sql
+CREATE OR REPLACE FUNCTION prevent_duplicate_attendance()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM Attendance 
+        WHERE StaffID = NEW.StaffID AND currentDate = NEW.currentDate
+    ) THEN
+        RAISE EXCEPTION 'Attendance already exists for staff ID % on date %', 
+                        NEW.StaffID, NEW.currentDate;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_prevent_duplicate_attendance
+BEFORE INSERT ON Attendance
+FOR EACH ROW
+EXECUTE FUNCTION prevent_duplicate_attendance();
+'''
+
+
+###### הוספת attendance ראשון להיום לעובד מסוים:
+
+[![Alt text](images/trigger2_1.png)
+
+
+###### הוספת attendance שני להיום לעובד מסוים:
+
+[![Alt text](images/trigger2_2.png)
+
+---
 
