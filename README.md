@@ -1147,10 +1147,10 @@ $$;
 
 ### הרצת התוכנית הראשית:
 
-[![Alt text](images/result_main1_1.png)
+[![Alt text](images/result_main1_2.png)
 
 ---
-[![Alt text](images/result_main1_2.png)
+[![Alt text](images/result_main1_1.png)
 
 
 
