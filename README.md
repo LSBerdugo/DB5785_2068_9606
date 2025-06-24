@@ -1269,11 +1269,14 @@ $$;
 
 [![Alt text](images/result_main2.png)
 
+---
 לפני ההרצה:
+
 [![Alt text](images/result_main2_1.png)
 
-
+---
 אחרי ההרצה:
+
 [![Alt text](images/result_main2_2.png)
 
 
