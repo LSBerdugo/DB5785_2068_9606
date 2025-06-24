@@ -1360,7 +1360,7 @@ CREATE TRIGGER check_license_before_assignment
 טריגר זה נועד למנוע רישום כפול של נוכחות לאותו עובד (StaffID) באותו תאריך (currentDate).
 כלומר, אם כבר קיימת שורת נוכחות עבור עובד בתאריך מסוים – לא תתאפשר הכנסת שורה נוספת עם אותם פרטים.
 
-''' sql
+'''sql
 CREATE OR REPLACE FUNCTION prevent_duplicate_attendance()
 RETURNS TRIGGER AS $$
 BEGIN
