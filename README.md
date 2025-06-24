@@ -1221,6 +1221,7 @@ $$ LANGUAGE plpgsql;
 
 ``` sql
 CREATE OR REPLACE PROCEDURE add_attendance_once(
+    p_attendId INT,
     p_staff_id INT, 
     p_date DATE, 
     p_status status_enum
@@ -1235,8 +1236,8 @@ BEGIN
         WHERE StaffID = p_staff_id AND currentDate = p_date
     ) THEN
         -- הכנסת נוכחות חדשה
-        INSERT INTO Attendance(currentDate, Status, StaffID)
-        VALUES (p_date, p_status, p_staff_id);
+        INSERT INTO Attendance(attendanceid ,currentDate, Status, StaffID)
+        VALUES (p_attendId ,p_date, p_status, p_staff_id);
     END IF;
 END;
 $$;
@@ -1247,14 +1248,14 @@ $$;
 
 
 ``` sql
-CREATE OR REPLACE PROCEDURE main_attendance_check(p_staff_id INT)
+CREATE OR REPLACE PROCEDURE main_attendance_check(p_attendId INT, p_staff_id INT)
 LANGUAGE plpgsql
 AS $$
 DECLARE
     percent NUMERIC;
 BEGIN
     -- הוספת נוכחות "נוכח" ליום הנוכחי (אם לא קיימת)
-    CALL add_attendance_once(p_staff_id, CURRENT_DATE, 'Present');
+    CALL add_attendance_once(p_attendId,p_staff_id, CURRENT_DATE, 'Present');
 
     -- חישוב אחוזי נוכחות
     percent := get_attendance_percentage(p_staff_id);
