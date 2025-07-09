@@ -1474,34 +1474,34 @@ psycopg2 – ממשק חיבור בין פייתון ל־PostgreSQL.
 # תמונות מסך של הפעלת האפליקציה:
 
  
-חלון ראשי:
+### חלון ראשי:
 [![Alt text](images/main_window.png)
 
 ---
-חלון לניהול לוח זמנים:
+### חלון לניהול לוח זמנים:
 
 [![Alt text](images/schedule_window.png)
 
 ---
-חלון לניהול עובדים:
+#### חלון לניהול עובדים:
 [![Alt text](images/staff_window.png)
 
 ---
-חלון לניהול נהגים:
+#### חלון לניהול נהגים:
 
 [![Alt text](images/driver_window.png)
 
 ---
-חלון לניהול הקצאות אוטובוסים לנהגים:
+#### חלון לניהול הקצאות אוטובוסים לנהגים:
 [![Alt text](images/driverassignement_window.png)
 
 ---
-חלון להרצת שאילתות:
+#### חלון להרצת שאילתות:
 
 [![Alt text](images/queries_window.png)
 
 ---
-חלון להרצת פונקציות:
+#### חלון להרצת פונקציות:
 
 [![Alt text](images/functions_window.png)
 
