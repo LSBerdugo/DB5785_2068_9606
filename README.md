@@ -3,8 +3,8 @@
 ##                                                                                 Driver and Staff Management
 
 ###                                                                                                              **מגישות:**   
-###                                                                                                            לאה ברדוגו 341032068  
-###                                                                                                           שירה קרנברג 214359606  
+###                                                                                                            לאה ברדוגו 
+###                                                                                                           שירה קרנברג
 
 ![Alt text](images/Bus_Driver.png)
 
